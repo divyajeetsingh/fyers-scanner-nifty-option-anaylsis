@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Credentials and sensitive information
+credentials.json
+access_token.json
+
+# Logs
+*.log
+
+# Local/IDE settings
+.vscode/
+.idea/
