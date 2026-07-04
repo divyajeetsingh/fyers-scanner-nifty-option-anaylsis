@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fyers Real-Time Options Flow Scanner</title>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --ce-color: #10b981;
+            --ce-glow: rgba(16, 185, 129, 0.2);
+            --pe-color: #ec4899;
+            --pe-glow: rgba(236, 72, 153, 0.2);
+            --strike-bg: rgba(31, 41, 55, 0.8);
+            --accent-orange: #f59e0b;
+            --shadow-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --table-header-bg: #0b0f19;
+            --border-row: rgba(255, 255, 255, 0.03);
+            --header-bg: rgba(10, 15, 30, 0.8);
+        }
+
+        body.theme-light {
+            --bg-color: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --strike-bg: rgba(226, 232, 240, 0.9);
+            --shadow-glow: 0 8px 32px 0 rgba(15, 23, 42, 0.06);
+            --table-header-bg: #f8fafc;
+            --border-row: rgba(15, 23, 42, 0.04);
+            --header-bg: rgba(255, 255, 255, 0.85);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.05) 0px, transparent 50%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.05) 0px, transparent 50%);
+        }
+
+        /* Layout */
+        header {
+            background: var(--header-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 1.25rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-logo-section h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .market-summary {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: rgba(31, 41, 55, 0.4);
+            border: 1px solid var(--card-border);
+            padding: 0.5rem 1.25rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .summary-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-val {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        #summary-ltp {
+            color: #3b82f6;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .dev-link-section {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .dev-link-section a {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .dev-link-section a:hover {
+            color: #60a5fa;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(17, 24, 39, 0.4);
+            border: 1px solid var(--card-border);
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+        }
+
+        .status-dot.online {
+            background-color: var(--ce-color);
+            box-shadow: 0 0 10px var(--ce-color);
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        main {
+            display: flex;
+            flex: 1;
+            gap: 1.5rem;
+            padding: 1.5rem 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+            width: 100%;
+            height: calc(100vh - 80px);
+        }
+
+        .scanner-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            box-shadow: var(--shadow-glow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 70% width for main options grid */
+        .grid-panel {
+            flex: 7;
+        }
+
+        /* 30% width for live alerts logs */
+        .logs-panel {
+            flex: 3;
+        }
+
+        .panel-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Option Chain Table Style */
+        .option-chain-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: right;
+        }
+
+        .option-chain-table th {
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 0.75rem 0.5rem;
+            border-bottom: 2px solid var(--card-border);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            background: var(--table-header-bg);
+            z-index: 10;
+        }
+
+        .option-chain-table td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid var(--border-row);
+            vertical-align: middle;
+            transition: background 0.3s;
+        }
+
+        /* Center column strike configuration */
+        .option-chain-table th.strike-header,
+        .option-chain-table td.strike-cell {
+            text-align: center;
+            font-weight: 700;
+            background: rgba(31, 41, 55, 0.5);
+            border-left: 1px solid var(--card-border);
+            border-right: 1px solid var(--card-border);
+        }
+
+        .option-chain-table td.strike-cell {
+            color: #60a5fa;
+            font-size: 0.9rem;
+        }
+
+        /* CE / PE Label colors */
+        .ce-header {
+            color: var(--ce-color);
+            text-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
+        }
+
+        .pe-header {
+            color: var(--pe-color);
+            text-shadow: 0 0 5px rgba(236, 72, 153, 0.3);
+        }
+
+        /* Alert Spike Styles */
+        .spike-active {
+            animation: alert-flash 1.5s infinite;
+        }
+
+        @keyframes alert-flash {
+            0%, 100% { background-color: rgba(245, 158, 11, 0.1); }
+            50% { background-color: rgba(245, 158, 11, 0.25); }
+        }
+
+        /* Dynamic Update Flash Animations */
+        .flash-ce {
+            animation: flash-green-anim 0.8s ease-out;
+        }
+
+        .flash-pe {
+            animation: flash-pink-anim 0.8s ease-out;
+        }
+
+        @keyframes flash-green-anim {
+            0% { background-color: rgba(16, 185, 129, 0.4); color: #fff; }
+            100% { background-color: transparent; }
+        }
+
+        @keyframes flash-pink-anim {
+            0% { background-color: rgba(236, 72, 153, 0.4); color: #fff; }
+            100% { background-color: transparent; }
+        }
+
+        /* Live log cards */
+        .logs-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .log-card {
+            background: rgba(31, 41, 55, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            animation: slide-in 0.3s ease-out;
+        }
+
+        @keyframes slide-in {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .log-card.spike {
+            border: 1px solid var(--accent-orange);
+            background: rgba(245, 158, 11, 0.05);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.05);
+        }
+
+        .log-card.spike::before {
+            content: "🔥 VOLUME SPIKE DETECTED";
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--accent-orange);
+            letter-spacing: 0.5px;
+        }
+
+        .log-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .log-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .log-title.ce-side {
+            color: var(--ce-color);
+        }
+
+        .log-title.pe-side {
+            color: var(--pe-color);
+        }
+
+        .log-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .log-stats span strong {
+            color: var(--text-primary);
+        }
+
+        .badge-threshold {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .no-data-msg {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            padding: 2rem 0;
+            font-style: italic;
+        }
+
+        /* Number Formatter styles */
+        .text-dim {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .chg-val {
+            font-weight: 600;
+        }
+
+        .highlight-spike {
+            color: var(--accent-orange) !important;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <div class="header-logo-section">
+            <span style="font-size: 1.5rem;">⚡</span>
+            <h1>FYERS REAL-TIME SCANNER</h1>
+        </div>
+
+        <div class="market-summary">
+            <div class="summary-item">
+                <span class="summary-label">Index</span>
+                <span class="summary-val" id="summary-symbol">NSE:NIFTY50-INDEX</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Index LTP</span>
+                <span class="summary-val" id="summary-ltp">—</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">ATM Strike</span>
+                <span class="summary-val" id="summary-atm">—</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Expiry Date</span>
+                <span class="summary-val" id="summary-expiry">—</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Today's Threshold</span>
+                <span class="summary-val" id="summary-threshold">—</span>
+            </div>
+        </div>
+
+        <div class="status-container">
+            <div class="dev-link-section">
+                <span>✈️</span> Developer: <a href="https://t.me/divyajeetfx" target="_blank">@divyajeetfx</a>
+            </div>
+            <div class="status-pill">
+                <span id="conn-text">DISCONNECTED</span>
+                <div id="conn-dot" class="status-dot"></div>
+            </div>
+            <a href="/fyer" style="color: var(--text-secondary); text-decoration: none; font-size: 1.2rem; border-left: 1px solid var(--card-border); padding-left: 0.75rem; margin-left: 0.25rem; transition: transform 0.3s ease, color 0.2s; display: inline-flex; align-items: center;" onmouseover="this.style.color='var(--text-primary)'; this.style.transform='rotate(45deg)';" onmouseout="this.style.color='var(--text-secondary)'; this.style.transform='rotate(0deg)';" title="Settings">⚙️</a>
+            <button id="theme-toggle" onclick="toggleTheme()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; transition: transform 0.2s; display: inline-flex; align-items: center; padding: 0; margin-left: 0.5rem;" title="Switch Theme">🌙</button>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main>
+        <!-- Real-Time Option Chain Grid Panel -->
+        <section class="scanner-panel grid-panel">
+            <div class="panel-header">
+                <h2>📈 Real-Time Option Chain</h2>
+                <div class="text-dim">Subscribed around ATM Strike Range</div>
+            </div>
+            <div class="panel-body">
+                <table class="option-chain-table">
+                    <thead>
+                        <tr>
+                            <th class="ce-header" colspan="5">Call Options (CE)</th>
+                            <th class="strike-header" rowspan="2" style="width: 120px;">Strike Price</th>
+                            <th class="pe-header" colspan="5">Put Options (PE)</th>
+                        </tr>
+                        <tr>
+                            <th class="ce-header">OI</th>
+                            <th class="ce-header">Prev Vol</th>
+                            <th class="ce-header">Vol Change</th>
+                            <th class="ce-header">Total Vol</th>
+                            <th class="ce-header">LTP</th>
+                            
+                            <th class="pe-header">LTP</th>
+                            <th class="pe-header">Total Vol</th>
+                            <th class="pe-header">Vol Change</th>
+                            <th class="pe-header">Prev Vol</th>
+                            <th class="pe-header">OI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="option-chain-body">
+                        <!-- Populated Dynamically -->
+                        <tr>
+                            <td colspan="11" class="no-data-msg">Waiting for WebSocket connection & Fyers subscription ticks...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Live Alerts Feed Panel -->
+        <section class="scanner-panel logs-panel">
+            <div class="panel-header">
+                <h2>🔔 Live Alert & Tick Stream</h2>
+                <span id="log-count" class="badge-threshold">0 Logs</span>
+            </div>
+            <div class="panel-body" id="logs-feed-body">
+                <div class="no-data-msg">No logs received yet. Real-time ticks will appear here as they are pushed.</div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let ws;
+        let strikes = [];
+        let optionChainData = {};
+        let volumeThreshold = 100000;
+        let logCounter = 0;
+
+        const summarySymbol = document.getElementById("summary-symbol");
+        const summaryLtp = document.getElementById("summary-ltp");
+        const summaryAtm = document.getElementById("summary-atm");
+        const summaryExpiry = document.getElementById("summary-expiry");
+        const summaryThreshold = document.getElementById("summary-threshold");
+        const connText = document.getElementById("conn-text");
+        const connDot = document.getElementById("conn-dot");
+        const optionChainBody = document.getElementById("option-chain-body");
+        const logsFeedBody = document.getElementById("logs-feed-body");
+        const logCount = document.getElementById("log-count");
+
+        // Format Number Helper
+        function formatNumber(num) {
+            if (num === undefined || num === null) return "0";
+            return num.toLocaleString('en-IN');
+        }
+
+        // Connect to WebSocket Server
+        function connect() {
+            // Use hostname of URL we loaded from
+            const wsUri = `ws://${window.location.hostname || 'localhost'}:8765`;
+            console.log(`Connecting to WebSocket: ${wsUri}`);
+            connText.innerText = "Connecting...";
+            connDot.className = "status-dot";
+
+            ws = new WebSocket(wsUri);
+
+            ws.onopen = function() {
+                console.log("WebSocket Connection Opened.");
+                connText.innerText = "CONNECTED";
+                connDot.className = "status-dot online";
+            };
+
+            ws.onmessage = function(event) {
+                try {
+                    const payload = JSON.parse(event.data);
+                    handleSocketMessage(payload);
+                } catch (e) {
+                    console.error("Error processing WS message:", e);
+                }
+            };
+
+            ws.onclose = function(e) {
+                console.warn("WebSocket closed. Attempting reconnect in 3s...", e.reason);
+                connText.innerText = "DISCONNECTED";
+                connDot.className = "status-dot";
+                setTimeout(connect, 3000);
+            };
+
+            ws.onerror = function(err) {
+                console.error("WebSocket encountered error:", err);
+                ws.close();
+            };
+        }
+
+        // Process message packets
+        function handleSocketMessage(msg) {
+            const now = new Date();
+            const webTimeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+
+            if (msg.type === "init") {
+                // Initialize option chain values and active strikes
+                optionChainData = msg.data;
+                volumeThreshold = msg.threshold;
+                strikes = Object.keys(optionChainData).map(Number).sort((a, b) => a - b);
+                
+                summaryThreshold.innerText = formatNumber(volumeThreshold);
+                if (msg.expiry) {
+                    summaryExpiry.innerText = msg.expiry;
+                }
+                if (msg.symbol) {
+                    summarySymbol.innerText = msg.symbol;
+                }
+                if (msg.ltp) {
+                    summaryLtp.innerText = msg.ltp.toFixed(2);
+                }
+                if (msg.atm) {
+                    summaryAtm.innerText = msg.atm;
+                }
+                
+                renderTableStructure();
+            }
+            else if (msg.type === "tick") {
+                const strike = msg.strike;
+                const optType = msg.opt_type;
+
+                if (!optionChainData[strike]) {
+                    optionChainData[strike] = {
+                        "CE": {"ltp": 0, "vol": 0, "prev_vol": 0, "chg_vol": 0, "oi": 0},
+                        "PE": {"ltp": 0, "vol": 0, "prev_vol": 0, "chg_vol": 0, "oi": 0}
+                    };
+                }
+
+                // Update data model
+                optionChainData[strike][optType] = {
+                    ltp: msg.ltp,
+                    vol: msg.vol,
+                    prev_vol: msg.prev_vol,
+                    chg_vol: msg.chg_vol,
+                    oi: msg.oi
+                };
+                
+                if (msg.threshold) {
+                    volumeThreshold = msg.threshold;
+                    summaryThreshold.innerText = formatNumber(volumeThreshold);
+                }
+
+                // Make sure this strike is in our sorted list
+                if (!strikes.includes(strike)) {
+                    strikes.push(strike);
+                    strikes.sort((a, b) => a - b);
+                    renderTableStructure();
+                }
+
+                updateTableRowCell(strike, optType, webTimeStr, msg.timestamp);
+                addLogItem(msg, false, webTimeStr);
+            }
+            else if (msg.type === "alert") {
+                addLogItem(msg, true, webTimeStr);
+                
+                // Highlight row cell as alert spike active
+                const strike = msg.strike;
+                const optType = msg.opt_type;
+                const tdChgId = `cell-${strike}-${optType}-chg`;
+                const cell = document.getElementById(tdChgId);
+                if (cell) {
+                    cell.classList.add("spike-active", "highlight-spike");
+                    setTimeout(() => {
+                        cell.classList.remove("spike-active");
+                    }, 5000); // Highlight alert visual for 5 seconds
+                }
+            }
+            else if (msg.type === "meta") {
+                // Update header values
+                if (msg.ltp) summaryLtp.innerText = msg.ltp.toFixed(2);
+                if (msg.atm) summaryAtm.innerText = msg.atm;
+                if (msg.expiry) summaryExpiry.innerText = msg.expiry;
+                if (msg.threshold) {
+                    volumeThreshold = msg.threshold;
+                    summaryThreshold.innerText = formatNumber(volumeThreshold);
+                }
+            }
+        }
+
+        // Render option chain table rows initially or when new strikes are added
+        function renderTableStructure() {
+            if (strikes.length === 0) {
+                optionChainBody.innerHTML = `<tr><td colspan="11" class="no-data-msg">Waiting for WebSocket data initialization...</td></tr>`;
+                return;
+            }
+
+            let html = "";
+            strikes.forEach(strike => {
+                const ce = optionChainData[strike]["CE"];
+                const pe = optionChainData[strike]["PE"];
+
+                html += `
+                    <tr id="row-${strike}">
+                        <!-- CE Data -->
+                        <td id="cell-${strike}-CE-oi">${formatNumber(ce.oi)}</td>
+                        <td id="cell-${strike}-CE-prev_vol" class="text-dim">${formatNumber(ce.prev_vol)}</td>
+                        <td id="cell-${strike}-CE-chg" class="chg-val">${formatNumber(ce.chg_vol)}</td>
+                        <td id="cell-${strike}-CE-vol">${formatNumber(ce.vol)}</td>
+                        <td id="cell-${strike}-CE-ltp" style="font-weight: 600; color: var(--ce-color);">${ce.ltp.toFixed(2)}</td>
+
+                        <!-- Strike Price -->
+                        <td class="strike-cell">${strike}</td>
+
+                        <!-- PE Data -->
+                        <td id="cell-${strike}-PE-ltp" style="font-weight: 600; color: var(--pe-color);">${pe.ltp.toFixed(2)}</td>
+                        <td id="cell-${strike}-PE-vol">${formatNumber(pe.vol)}</td>
+                        <td id="cell-${strike}-PE-chg" class="chg-val">${formatNumber(pe.chg_vol)}</td>
+                        <td id="cell-${strike}-PE-prev_vol" class="text-dim">${formatNumber(pe.prev_vol)}</td>
+                        <td id="cell-${strike}-PE-oi">${formatNumber(pe.oi)}</td>
+                    </tr>
+                `;
+            });
+
+            optionChainBody.innerHTML = html;
+        }
+
+        // Selectively update specific cells and trigger animations
+        function updateTableRowCell(strike, optType, webTimeStr, serverTimeStr) {
+            const data = optionChainData[strike][optType];
+            const row = document.getElementById(`row-${strike}`);
+            if (!row) return;
+
+            const fields = ["oi", "prev_vol", "chg", "vol", "ltp"];
+            fields.forEach(field => {
+                const cellId = `cell-${strike}-${optType}-${field}`;
+                const cell = document.getElementById(cellId);
+                if (cell) {
+                    let val = "";
+                    if (field === "oi") val = formatNumber(data.oi);
+                    else if (field === "prev_vol") val = formatNumber(data.prev_vol);
+                    else if (field === "chg") val = formatNumber(data.chg_vol);
+                    else if (field === "vol") val = formatNumber(data.vol);
+                    else if (field === "ltp") val = data.ltp.toFixed(2);
+
+                    cell.innerText = val;
+                }
+            });
+
+            // Flash animation for updated columns
+            const flashClass = optType === "CE" ? "flash-ce" : "flash-pe";
+            row.classList.remove(flashClass);
+            void row.offsetWidth; // Force CSS reflow to restart animation
+            row.classList.add(flashClass);
+
+            // If the change volume is greater than the threshold, visually flag it
+            const chgCell = document.getElementById(`cell-${strike}-${optType}-chg`);
+            if (chgCell) {
+                if (data.chg_vol > volumeThreshold) {
+                    chgCell.classList.add("highlight-spike");
+                } else {
+                    chgCell.classList.remove("highlight-spike");
+                }
+            }
+        }
+
+        // Add Log item to Live Feed
+        function addLogItem(msg, isSpike = false, webTimeStr) {
+            // Remove the helper message if first item
+            if (logCounter === 0) {
+                logsFeedBody.innerHTML = "";
+            }
+
+            logCounter++;
+            logCount.innerText = `${formatNumber(logCounter)} Logs`;
+
+            const strike = msg.strike;
+            const optType = msg.opt_type;
+            const serverTime = msg.timestamp || "—";
+
+            const logCard = document.createElement("div");
+            logCard.className = `log-card ${isSpike ? 'spike' : ''}`;
+
+            const sideClass = optType === "CE" ? "ce-side" : "pe-side";
+
+            if (isSpike) {
+                logCard.innerHTML = `
+                    <div class="log-meta">
+                        <span>Server Time: <strong>${serverTime}</strong></span>
+                        <span>Client Arrived: <strong>${webTimeStr}</strong></span>
+                    </div>
+                    <div class="log-title ${sideClass}">
+                        ${msg.symbol} (${strike} ${optType})
+                    </div>
+                    <div class="log-stats">
+                        <span>LTP: <strong>₹${msg.ltp.toFixed(2)}</strong></span>
+                        <span>OI: <strong>${formatNumber(msg.oi)}</strong></span>
+                        <span>Change Vol: <strong style="color: var(--accent-orange);">${formatNumber(msg.chg)} 🔥</strong></span>
+                        <span>Total Vol: <strong>${formatNumber(msg.vol)}</strong></span>
+                    </div>
+                `;
+            } else {
+                logCard.innerHTML = `
+                    <div class="log-meta">
+                        <span>Server: ${serverTime}</span>
+                        <span>Recv: ${webTimeStr}</span>
+                    </div>
+                    <div class="log-title ${sideClass}">
+                        Tick Update: ${strike} ${optType} @ ₹${msg.ltp.toFixed(2)}
+                    </div>
+                    <div class="log-stats">
+                        <span>Chg Vol: <strong>+${formatNumber(msg.chg_vol)}</strong></span>
+                        <span>Vol: <strong>${formatNumber(msg.vol)}</strong></span>
+                    </div>
+                `;
+            }
+
+            // Insert at top of logs feed
+            logsFeedBody.insertBefore(logCard, logsFeedBody.firstChild);
+
+            // Limit logs feed to last 50 entries to avoid memory bloating
+            if (logsFeedBody.children.length > 50) {
+                logsFeedBody.removeChild(logsFeedBody.lastChild);
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const toggleBtn = document.getElementById("theme-toggle");
+            if (body.classList.contains("theme-light")) {
+                body.classList.remove("theme-light");
+                toggleBtn.innerText = "🌙";
+                localStorage.setItem("theme", "dark");
+            } else {
+                body.classList.add("theme-light");
+                toggleBtn.innerText = "☀️";
+                localStorage.setItem("theme", "light");
+            }
+        }
+
+        // Apply saved theme on load
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "light") {
+            document.body.classList.add("theme-light");
+            document.getElementById("theme-toggle").innerText = "☀️";
+        }
+
+        // Start WebSocket Connection
+        window.addEventListener("load", connect);
+    </script>
+</body>
+</html>

@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volume Threshold Config</title>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-purple: #7c3aed;
+            --accent-purple-hover: #6d28d9;
+            --accent-orange: #f97316;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --input-bg: rgba(31, 41, 55, 0.6);
+            --shadow-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(249, 115, 22, 0.06) 0px, transparent 50%);
+            padding: 2rem 1rem;
+        }
+
+        .config-container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            box-shadow: var(--shadow-glow);
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 1.5rem;
+        }
+
+        .header-title-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .header-title-section h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-title-section p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            padding: 0.5rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Expiry Box */
+        .expiry-section {
+            background: rgba(31, 41, 55, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+
+        .expiry-label-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .expiry-input-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .input-text {
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            font-family: inherit;
+            width: 150px;
+            text-align: center;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .input-text:focus {
+            border-color: var(--accent-purple);
+        }
+
+        .helper-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            max-width: 250px;
+            line-height: 1.3;
+        }
+
+        /* Config Table styling */
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .config-table th {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-align: left;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .config-table td {
+            padding: 1.25rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            vertical-align: middle;
+        }
+
+        .day-label-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .day-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .day-dot.blue { background-color: var(--accent-blue); }
+        .day-dot.green { background-color: var(--accent-green); }
+
+        .input-threshold {
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            font-family: inherit;
+            width: 140px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .input-threshold:focus {
+            border-color: var(--accent-purple);
+        }
+
+        /* Toggle switch */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .3s;
+            border-radius: 24px;
+            border: 1px solid var(--card-border);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #f3f4f6;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-orange);
+            border-color: transparent;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .toggle-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            width: 50px;
+        }
+
+        .toggle-label.active {
+            color: var(--accent-orange);
+        }
+
+        .last-updated-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Save Button */
+        .save-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn-save {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-hover));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-save:active {
+            transform: translateY(0);
+        }
+
+        .footnote {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+
+        .footnote code {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            font-family: monospace;
+            color: var(--text-primary);
+        }
+
+        /* Alert Banner */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(16, 185, 129, 0.95);
+            border: 1px solid var(--accent-green);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow-glow);
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="config-container">
+        <!-- Header -->
+        <header>
+            <div class="header-title-section">
+                <h1>📋 Volume Threshold Config</h1>
+                <p>Fyers NIFTY Options — Volume Spike Thresholds & Expiry Date</p>
+            </div>
+            <a href="/" class="btn-back">
+                <span>←</span> Back to Scanner
+            </a>
+        </header>
+
+        <!-- Expiry Date Group -->
+        <div class="expiry-section">
+            <div class="expiry-label-group">
+                <span style="font-size: 1.25rem;">🗓️</span>
+                <span>Expiry Date</span>
+            </div>
+            <div class="expiry-input-group">
+                <input type="text" id="expiry-date-input" class="input-text" placeholder="DD-MM-YYYY">
+                <p class="helper-text">Format: DD-MM-YYYY | Python reads this on every reconnect</p>
+            </div>
+        </div>
+
+        <!-- Thresholds Config Table -->
+        <table class="config-table">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Day</th>
+                    <th style="width: 30%;">Volume Threshold</th>
+                    <th style="width: 25%;">Expiry Day</th>
+                    <th style="width: 20%;">Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Monday -->
+                <tr data-day-index="0">
+                    <td>
+                        <div class="day-label-cell">
+                            <div class="day-dot blue"></div>
+                            <span>Monday</span>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="number" class="input-threshold" value="2000000">
+                    </td>
+                    <td>
+                        <div class="toggle-group">
+                            <label class="switch">
+                                <input type="checkbox" onchange="handleToggleChange(this)">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label">Normal</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="last-updated-text">—</span>
+                    </td>
+                </tr>
+
+                <!-- Tuesday -->
+                <tr data-day-index="1">
+                    <td>
+                        <div class="day-label-cell">
+                            <span>🔥</span>
+                            <span>Tuesday</span>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="number" class="input-threshold" value="3000000">
+                    </td>
+                    <td>
+                        <div class="toggle-group">
+                            <label class="switch">
+                                <input type="checkbox" onchange="handleToggleChange(this)">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label">Normal</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="last-updated-text">—</span>
+                    </td>
+                </tr>
+
+                <!-- Wednesday -->
+                <tr data-day-index="2">
+                    <td>
+                        <div class="day-label-cell">
+                            <div class="day-dot green"></div>
+                            <span>Wednesday</span>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="number" class="input-threshold" value="3000000">
+                    </td>
+                    <td>
+                        <div class="toggle-group">
+                            <label class="switch">
+                                <input type="checkbox" onchange="handleToggleChange(this)">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label">Normal</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="last-updated-text">—</span>
+                    </td>
+                </tr>
+
+                <!-- Thursday -->
+                <tr data-day-index="3">
+                    <td>
+                        <div class="day-label-cell">
+                            <div class="day-dot green"></div>
+                            <span>Thursday</span>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="number" class="input-threshold" value="3000000">
+                    </td>
+                    <td>
+                        <div class="toggle-group">
+                            <label class="switch">
+                                <input type="checkbox" onchange="handleToggleChange(this)">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label">Normal</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="last-updated-text">—</span>
+                    </td>
+                </tr>
+
+                <!-- Friday -->
+                <tr data-day-index="4">
+                    <td>
+                        <div class="day-label-cell">
+                            <div class="day-dot green"></div>
+                            <span>Friday</span>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="number" class="input-threshold" value="2000000">
+                    </td>
+                    <td>
+                        <div class="toggle-group">
+                            <label class="switch">
+                                <input type="checkbox" onchange="handleToggleChange(this)">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label">Normal</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="last-updated-text">—</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Save Section -->
+        <div class="save-container">
+            <button class="btn-save" onclick="saveSettings()">
+                <span>💾</span> Save Settings
+            </button>
+            <p class="footnote">
+                Python reads <code>expiry_date</code> from <code>settings.json</code> on every reconnect.
+                Thresholds are loaded dynamically from <code>settings.json</code> on every tick.
+                Changes here take effect immediately — no script restart required.
+            </p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="save-toast" class="toast">
+        <span>✅</span> Settings saved successfully!
+    </div>
+
+    <script>
+        let currentSettings = {};
+
+        // Helper to format date
+        function getFormattedTimestamp() {
+            const now = new Date();
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const day = now.getDate();
+            const month = months[now.getMonth()];
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${day} ${month}, ${hours}:${minutes}`;
+        }
+
+        // Toggle Switch visual handler
+        function handleToggleChange(checkbox) {
+            const label = checkbox.parentElement.nextElementSibling;
+            if (checkbox.checked) {
+                label.innerText = "Expiry";
+                label.classList.add("active");
+            } else {
+                label.innerText = "Normal";
+                label.classList.remove("active");
+            }
+        }
+
+        // Fetch Settings from API
+        function loadSettings() {
+            fetch('/api/settings')
+                .then(response => response.json())
+                .then(data => {
+                    currentSettings = data;
+                    
+                    // Expiry date input
+                    document.getElementById('expiry-date-input').value = data.expiry_date || '';
+
+                    // Days config rows
+                    const thresholds = data.thresholds || {};
+                    for (let index = 0; index <= 4; index++) {
+                        const dayRow = document.querySelector(`tr[data-day-index="${index}"]`);
+                        if (dayRow && thresholds[index]) {
+                            const config = thresholds[index];
+                            
+                            // Set threshold input
+                            dayRow.querySelector('.input-threshold').value = config.threshold;
+                            
+                            // Set Expiry Toggle state
+                            const checkbox = dayRow.querySelector('.switch input');
+                            checkbox.checked = !!config.is_expiry_day;
+                            handleToggleChange(checkbox);
+
+                            // Set Last Updated text
+                            dayRow.querySelector('.last-updated-text').innerText = config.last_updated || 'Default';
+                        }
+                    }
+                })
+                .error(err => console.error("Error loading config:", err));
+        }
+
+        // Save Settings to API
+        function saveSettings() {
+            const expiryDate = document.getElementById('expiry-date-input').value;
+            const updatedThresholds = {};
+            const timestamp = getFormattedTimestamp();
+
+            for (let index = 0; index <= 4; index++) {
+                const dayRow = document.querySelector(`tr[data-day-index="${index}"]`);
+                if (dayRow) {
+                    const thresholdInput = dayRow.querySelector('.input-threshold').value;
+                    const isExpiryChecked = dayRow.querySelector('.switch input').checked;
+                    
+                    // Compare values to see if they changed, and update timestamp if so
+                    let lastUpdated = dayRow.querySelector('.last-updated-text').innerText;
+                    const prevConfig = (currentSettings.thresholds && currentSettings.thresholds[index]) || {};
+                    
+                    if (
+                        parseInt(thresholdInput) !== parseInt(prevConfig.threshold) ||
+                        isExpiryChecked !== !!prevConfig.is_expiry_day ||
+                        lastUpdated === '—'
+                    ) {
+                        lastUpdated = timestamp;
+                        dayRow.querySelector('.last-updated-text').innerText = lastUpdated;
+                    }
+
+                    updatedThresholds[index] = {
+                        threshold: parseInt(thresholdInput) || 100000,
+                        is_expiry_day: isExpiryChecked,
+                        last_updated: lastUpdated
+                    };
+                }
+            }
+
+            const payload = {
+                expiry_date: expiryDate,
+                thresholds: updatedThresholds
+            };
+
+            fetch('/api/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update current cached settings reference
+                    currentSettings = payload;
+                    showToast();
+                } else {
+                    alert("Error saving settings: " + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error("Save failed:", err);
+                alert("Failed to reach server to save configurations.");
+            });
+        }
+
+        // Toast visual display
+        function showToast() {
+            const toast = document.getElementById('save-toast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Start initialization
+        window.addEventListener('load', loadSettings);
+    </script>
+</body>
+</html>

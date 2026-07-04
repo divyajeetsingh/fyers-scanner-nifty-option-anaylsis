@@ -1,0 +1,16 @@
+{
+  "name": "fyers-scanner-node",
+  "version": "1.0.0",
+  "description": "Real-time Option Chain Scanner using Fyers API v3 in Node.js",
+  "main": "scanner.js",
+  "scripts": {
+    "start": "node scanner.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "express": "^4.19.2",
+    "fyers-api-v3": "latest",
+    "otplib": "^12.0.1",
+    "ws": "^8.17.1"
+  }
+}

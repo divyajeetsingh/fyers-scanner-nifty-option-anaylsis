@@ -1,0 +1,30 @@
+{
+    "expiry_date": "07-07-2026",
+    "thresholds": {
+        "0": {
+            "threshold": 200000,
+            "is_expiry_day": false,
+            "last_updated": "27 Jun, 10:14"
+        },
+        "1": {
+            "threshold": 3000,
+            "is_expiry_day": true,
+            "last_updated": "16 Jun, 09:08"
+        },
+        "2": {
+            "threshold": 3000000,
+            "is_expiry_day": true,
+            "last_updated": "27 Jun, 10:14"
+        },
+        "3": {
+            "threshold": 3000000,
+            "is_expiry_day": false,
+            "last_updated": "19 Jun, 09:36"
+        },
+        "4": {
+            "threshold": 2000000,
+            "is_expiry_day": false,
+            "last_updated": "12 Jun, 14:48"
+        }
+    }
+}
