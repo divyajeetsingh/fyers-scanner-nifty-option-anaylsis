@@ -568,7 +568,8 @@
         // Connect to WebSocket Server
         function connect() {
             // Use hostname of URL we loaded from
-            const wsUri = `ws://${window.location.hostname || 'localhost'}:8765`;
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUri = `${protocol}//${window.location.host}`;
             console.log(`Connecting to WebSocket: ${wsUri}`);
             connText.innerText = "Connecting...";
             connDot.className = "status-dot";
